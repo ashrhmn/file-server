@@ -9,9 +9,9 @@ import FolderItem from './FolderItem'
 export default () => {
   const baseUrlState = useRecoilValue(apiUrlState)
 
-  const rootFolderQuery = useQuery('/', () =>
+  const rootFolderQuery = useQuery('dir', () =>
     axios
-      .get(baseUrlState)
+      .get(baseUrlState+'/dir')
       .then((response) => response.data as IFileItem[] | IFolderItem[]),
   )
 
