@@ -1,20 +1,35 @@
-import axios from "axios"
-import { useQuery } from "react-query"
-import { useRecoilValue } from "recoil"
-import { apiUrlState } from "../store"
+import axios from 'axios'
+import { useQuery } from 'react-query'
+import { useRecoilValue } from 'recoil'
+import { apiUrlState } from '../store'
+import { IDirectoryItem, IFileItem, IFolderItem } from '../types'
+import FileItem from './FileItem'
+import FolderItem from './FolderItem'
 
 export default () => {
+  const baseUrlState = useRecoilValue(apiUrlState)
 
-    const baseUrlState = useRecoilValue(apiUrlState)
+  const rootFolderQuery = useQuery('/', () =>
+    axios
+      .get(baseUrlState)
+      .then((response) => response.data as IFileItem[] | IFolderItem[]),
+  )
 
-    const rootFolderQuery = useQuery('/', () => axios.get(baseUrlState).then(response => response.data))
-
-    return (
+  return (
+    <>
+      {rootFolderQuery.isLoading && <h1>Loading...</h1>}
+      {rootFolderQuery.isError && <h1>Error loading...</h1>}
+      {rootFolderQuery.isFetched && (
         <>
-            <h1>Folders</h1>
-            {rootFolderQuery.isLoading && <h1>Loading...</h1>}
-            {rootFolderQuery.isError && <h1>Error loading...</h1>}
-            {rootFolderQuery.isFetched && <h1>Fetched...</h1>}
+          {rootFolderQuery.data?.map((item) => {
+            if (item.type == 'directory') {
+              return <FolderItem key={item.path} item={item as IFolderItem} />
+            } else {
+              return <FileItem key={item.path} item={item as IFileItem} />
+            }
+          })}
         </>
-    )
+      )}
+    </>
+  )
 }
